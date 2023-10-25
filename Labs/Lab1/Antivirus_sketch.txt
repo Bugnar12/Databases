@@ -1,0 +1,17 @@
+Tables : 
+-Antivirus soft
+-Operating system :
+-Customers : ...
+-Centers(?): Management, IT, maintainance...
+-Marketing :
+-Associations : 
+-Costs: employee salary, curent, confortability, licenses for products
+-Employee
+-Cifra de afaceri
+
+
+
+Relationships :  
+m : n(many to many) -> A type of antivirus can have multiple operating systems it works on, and an operating system can have a bunch of antiviruses which are compatible to it. =>(a table with Antivirus_OS_Compatibility???)
+
+1 : m : a user can have only one antivirus, but an antivirus can have multiple customers
