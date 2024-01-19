@@ -1,0 +1,32 @@
+CREATE PROCEDURE insertOnRow2 (@tableName VARCHAR(70)) AS
+BEGIN
+    DECLARE @getColumnsQuery NVARCHAR(MAX) = N' 
+        SELECT COLUMN_NAME, DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = ''' + @tableName + '''
+    ';
+
+    DECLARE @insertQuery NVARCHAR(MAX) = N'INSERT INTO ' + @tableName;
+
+    DECLARE @columns NVARCHAR(MAX);
+    DECLARE @types NVARCHAR(MAX);
+    DECLARE @rowsNumber INT = 0;
+
+    -- Execute dynamic SQL and fetch results into variables using sp_executesql
+    EXEC sp_executesql @getColumnsQuery, 
+                       N'@columns NVARCHAR(MAX) OUTPUT, @types NVARCHAR(MAX) OUTPUT', 
+                       @columns OUTPUT, @types OUTPUT;
+
+    -- Count the number of rows
+    SELECT @rowsNumber = COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = @tableName;
+
+    -- Print the results (you can remove this in the final version)
+    PRINT 'Columns: ' + @columns;
+    PRINT 'Types: ' + @types;
+    PRINT 'Number of Rows: ' + CAST(@rowsNumber AS NVARCHAR(MAX));
+
+
+END
+GO

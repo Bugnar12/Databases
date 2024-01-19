@@ -1,0 +1,3 @@
+Example : Student and University (student has a foreign key to the university)
+In this case when deleting data Student should be the first removed
+When inserting, firstly we should insert in University to have the specific primary keys that will be referenced in the Student table
