@@ -1,0 +1,175 @@
+Seminar 5 - Indexes
+->structures sotred on the disk
+-> associated to tables/views
+->optimize retrival operations
+
+Good indexing => fast application
+Bad indexing => slow application
+
+Syntax:
+CREATE [UNIQUE] [CLUSTERED/NONCLUSTERED]
+	INDEX idxName ON
+	Schema TableName/View
+	(colA[ASC|DESC],colB,..) -> search key columns
+	[INCLUDE (col1, col2,...)] -> NON-key columns
+	[WHERE <cond>]
+	[WITH <opt1,...,>]
+
+Characteristics:-clustered/non-clustered index
+		-unique/NOT-unique
+		-search key : 1 col + multi cols
+		-non-clustered index : full table OR filtered table
+		-idx with non key cols OR cols in the index : ASC/DESC
+
+
+	CLUSTERED			NONCLUSTERED
+------------------------------------------------------
+-data rows stored on the	-non-clust. idx order
+disk based on the clust.	independent from the order
+idx order			in data is stored on the
+				disk
+-create clustered index         -create index idxnclN
+idxN ON Table(..)		ON Table(..)
+	
+-used for the most exec.	-(<key,val>, pointer) stuct.
+queries				pointer -> id file, no. page
+				no. record(heaptable)
+-used for range queries			->clust. idx value
+>< between				(table + clst. idx)
+
+-high degree of uniqueness
+
+-search key columns :
+should not be frequently
+changed + as small as
+possible
+
+-SQL SERVER 2022		at most 999 non-clust. idx
+at most 1 clust. idx		
+search keycols : max 32 cols	max 32 cols too
+		max 900 bytes	1700 bytes
+
+-structured as BSTree
+
+-PK on a table:
+ ->if not(nonclustered) keyw
+   and if table doesn't have
+		clst. idx
+ =>a unique clst. idx is created
+   on PK cols
+
+
+------------------------------------------------------
+drop index...
+OR
+drop index... ON table...	
+
+
+---EXAMPLE IN SQL---
+
+*some tables with children presents and a many-to-many relation*
+
+DROP INDEX lettersToSanta.idx_LTX_cid_pid
+DROP INDEX idx_LTS_date on LettersToSanta
+
+--1.Clustered index
+SELECT cid, pid
+FROM LettersToSanta
+where letterDate =  '2023-12-02 19:46:01.350'
+
+create clustered index idx_LTS_date
+ON LettersToSanta(letterDate)
+
+SELECT cid, pid
+FROM LettersToSanta
+WHERE letterDate = '2023-12-02 19:46:01.350'
+-- clustered idx seek
+
+SELECT *
+FROM Children
+WHERE cid = 109
+
+-- 2. Non-clust. index
+SELECT *
+FROM Children
+WHERE age = 14
+
+CREATE INDEX idx_children_age
+ON Children(age)
+
+SELECT *
+FROM Children
+WHERE age = 14
+-- 2: non-clust. index seek + key lookup
+-- or clust. index scan
+
+--key lookup takes more time to search for all the data from the program
+--because we need to also get the data besides that not only the age 
+--conlcusion : doing a clustered index scan would be faster in this case
+
+--3. Unique indexes
+
+SELECT * 
+FROM Presents
+WHERE pname = 'ceva'
+-- clust. index scan
+
+CREATE UNIQUE INDEX idx_Presents_name
+ON Presents(pname)
+
+SELECT * 
+FROM Presents
+WHERE pname = 'ceva'
+-- NONCLUSTERED index seek + key lookup 
+-- because we have only one value and we seek for that in particular
+
+--4.Multi column index
+
+SELECT cid, pid
+FROM LettersToSanta
+where cid = 140
+
+--clustered index scan
+CREATE INDEXX idx_LTS_cid_pid
+ON LettersToSanta(cid, pid)
+
+SELECT cid, pid
+FROM LettersToSanta
+where cid = 140
+-- non clust. index scan
+
+--5.Covering index
+-- in the include you can add columns with a datatype 
+--that is not allowed in the search key columns
+
+SELECT *
+FROM Children
+WHERE age = 10
+--clustered index scan
+
+DROP INDEX idx_Children_age ON Children
+
+CREATE INDEX idx_Children_age ON
+Children(age)
+INCLUDE(cname)
+
+SELECT *
+FROM Children
+WHERE age = 10
+-- NON clust. index seek because now we include everything we need in this query
+
+Filtered index : 
+ CREATE INDEX idx_filtered
+ ON LTS(cid, pid)
+ WHERE letterDate IS NOT NULL
+
+Index design : 
+1.Analyze
+2.DB-related aspects
+3.Query-related aspects
+4.Columns-related aspects
+
+-Search how they can be used for insert delete update
+
+Practical exam model : 
+Grila : c), c), b)
